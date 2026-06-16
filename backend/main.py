@@ -32,6 +32,5 @@ def analyze(input: JDInput):
             return {"text": text}
         except httpx.HTTPError as e:
             raise HTTPException(status_code=400, detail="Your request is malformed or invalid")
-
     else:
         raise HTTPException(status_code=400)

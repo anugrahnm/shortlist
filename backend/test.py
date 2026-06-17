@@ -34,6 +34,3 @@ What we're looking for
 response = httpx.post("http://127.0.0.1:8000/analyze", json={"text": jd})
 print(response.json())
 
-
-with open("cv.txt", "r") as f:
-    print(f.read())

@@ -4,12 +4,25 @@ from bs4 import BeautifulSoup
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import httpx
+from fastapi.middleware.cors import CORSMiddleware
 
 class JDInput(BaseModel):
     text: str | None = None
     url: str | None = None
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:5174"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = origins,
+    allow_credentials=True,
+    allow_methods=["POST"],
+    allow_headers=["Content-Type"]
+)
 
 vectorizer = TfidfVectorizer(stop_words="english", lowercase=True)
 
@@ -45,7 +58,7 @@ def calculate_match(cv_text, jd_text):
     return {"matched": matched, "missing": missing, "score":cos_sim[0,1]}
 
 
-@app.post("/analyze")
+@app.post("/analyze/")
 def analyze(input: JDInput):
     if input.text:
         score = calculate_match(cv, input.text)

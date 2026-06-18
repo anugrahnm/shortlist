@@ -50,9 +50,9 @@ def calculate_match(cv_text, jd_text):
     jd_keywords = list(zip(feature_names, vectors_jd))
     jd_keywords.sort(key=lambda x: x[1], reverse=True)
 
-    matched = [jd_keyword for jd_keyword in jd_keywords if jd_keyword[0] in cv_text and jd_keyword[1] > 0]
+    matched = [jd_keyword for jd_keyword in jd_keywords if jd_keyword[0] in cv_text.lower() and jd_keyword[1] > 0]
 
-    missing = [jd_keyword for jd_keyword in jd_keywords if jd_keyword[0] not in cv_text and jd_keyword[1] > 0]
+    missing = [jd_keyword for jd_keyword in jd_keywords if jd_keyword[0] not in cv_text.lower() and jd_keyword[1] > 0]
 
     cos_sim = cosine_similarity(vectors)
     return {"matched": matched, "missing": missing, "score":cos_sim[0,1]}

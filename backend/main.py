@@ -5,6 +5,22 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import httpx
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from google import genai
+
+client = genai.Client()
+
+def gemini(cv, jd):
+    response = client.models.generate_content(
+        model="gemini-3.1-flash-lite",
+        contents=f"""My CV:{cv} and the JD:{jd}"""
+    )
+    return response.text
+
 
 class JDInput(BaseModel):
     text: str | None = None
@@ -67,6 +83,21 @@ def analyze(input: JDInput):
         try:
             text = fetch_jd_from_url(input.url)
             score = calculate_match(cv, text)
+            return {"matched":score["matched"],"missing":score["missing"],"score": score["score"]}
+        except httpx.HTTPError as e:
+            raise HTTPException(status_code=400, detail="Your request is malformed or invalid")
+    else:
+        raise HTTPException(status_code=400)
+
+@app.post("/analyze/gemini/")
+def gemini_analyze(input:JDInput):
+    if input.text:
+        score = gemini(cv, input.text)
+        return {"matched":score["matched"],"missing":score["missing"],"score": score["score"]}
+    if input.url:
+        try:
+            text = fetch_jd_from_url(input.url)
+            score = gemini(cv, text)
             return {"matched":score["matched"],"missing":score["missing"],"score": score["score"]}
         except httpx.HTTPError as e:
             raise HTTPException(status_code=400, detail="Your request is malformed or invalid")

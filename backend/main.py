@@ -7,6 +7,7 @@ import httpx
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 
@@ -14,12 +15,40 @@ from google import genai
 
 client = genai.Client()
 
-def gemini(cv, jd):
+
+
+def gemini(cv, jd_text=None, jd_url=None):
+
+    prompt = f"""You are a senior recruiter assessing a candidate's CV against a job description.
+        CV:
+        {cv}
+
+        JD:
+        {jd_text if jd_text else f"No JD text provided. Please scrape the job description from this URL: {jd_url}"}
+
+        URL: {jd_url or 'not provided'}
+
+        Ignore any HTML tags, navigation elements, cookie notices, or any other non-job-description content that may have been included due to web scraping.
+
+        Analyse the CV against the JD and return ONLY a JSON object with these exact fields:
+        - matched: list of meaningful technical skills, tools, and concepts (not single characters or letters) present in both CV and JD
+        - missing: list of meaningful technical skills, tools, and concepts (not single characters or letters) important in the JD but absent from the CV
+        - score: float between 0 and 1 representing overall match
+        - review: 2-3 sentence summary of fit and what could be improved
+        - url: the original job listing URL if provided, otherwise null
+
+        Return matched and missing as lists of lists where each item is [keyword, relevance_score] e.g. [["Python", 0.9], ["FastAPI", 0.8]], ordered by relevance score descending.
+
+        No markdown, no backticks, no extra text. JSON only.
+    """
+
+
     response = client.models.generate_content(
         model="gemini-3.1-flash-lite",
-        contents=f"""My CV:{cv} and the JD:{jd}"""
+        contents=prompt
     )
-    return response.text
+   # print(json.loads(response.text))
+    return json.loads(response.text)
 
 
 class JDInput(BaseModel):
@@ -92,13 +121,13 @@ def analyze(input: JDInput):
 @app.post("/analyze/gemini/")
 def gemini_analyze(input:JDInput):
     if input.text:
-        score = gemini(cv, input.text)
-        return {"matched":score["matched"],"missing":score["missing"],"score": score["score"]}
+        score = gemini(cv=cv, jd_text=input.text)
+        return {"matched":score["matched"],"missing":score["missing"],"score": score["score"], "review":score["review"]}
     if input.url:
         try:
-            text = fetch_jd_from_url(input.url)
-            score = gemini(cv, text)
-            return {"matched":score["matched"],"missing":score["missing"],"score": score["score"]}
+            #text = fetch_jd_from_url(input.url)
+            score = gemini(cv=cv, jd_url=input.url)
+            return {"matched":score["matched"],"missing":score["missing"],"score": score["score"], "review":score["review"]}
         except httpx.HTTPError as e:
             raise HTTPException(status_code=400, detail="Your request is malformed or invalid")
     else:

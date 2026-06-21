@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Moon, Sun } from "lucide-vue-next";
+import { Link, Moon, Sun, Type } from "lucide-vue-next";
 import { ref } from "vue";
 
 const jd_text = ref("");
@@ -8,50 +8,106 @@ const results = ref<{
   matched: string[][];
   missing: string[][];
   score: number;
+  review: string;
 } | null>(null);
 const isDark = ref(false);
+const isUrl = ref(false);
 
 const onSubmit = async () => {
-  const body = jd_text.value ? { text: jd_text.value } : { url: jd_url.value };
+  if (jd_text.value === "" && jd_url.value === "") {
+    alert("Please enter the JD Text/URL before Submitting!");
+  } else {
+    const body = jd_text.value
+      ? { text: jd_text.value }
+      : { url: jd_url.value };
 
-  const requestOptions = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  };
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    };
 
-  const response = await fetch(
-    "http://localhost:8000/analyze/",
-    requestOptions,
-  );
-  results.value = await response.json();
+    const response = await fetch(
+      "http://localhost:8000/analyze/gemini/",
+      requestOptions,
+    );
+    results.value = await response.json();
+  }
+};
+
+const onSwitch = () => {
+  isUrl.value = !isUrl.value;
+};
+
+const onClear = () => {
+  jd_text.value = "";
+  jd_url.value = "";
+  results.value = null;
 };
 </script>
 
 <template>
   <div
     :class="{ dark: isDark }"
-    class="flex flex-col w-screen font-mono h-screen sm:m-0 p-4 dark:bg-gray-900 dark:text-white sm:py-4 items-center"
+    class="flex flex-col w-screen font-mono min-w-xs min-h-screen sm:m-0 p-6 dark:bg-gray-900 dark:text-white sm:py-4 items-center justify-center"
   >
     <div
-      class="flex-col flex h-full w-full sm:w-0 sm:min-w-2xl gap-2 border rounded-lg sm:m-0 p-4"
+      class="flex-col flex w-full sm:w-0 min-w-xs sm:min-w-2xl gap-2 border rounded-lg sm:m-0 p-4"
     >
-      <div class="flex">
+      <div class="grid grid-cols-3">
+        <div class="border rounded-lg w-20 h-8 bg-gray-100 dark:bg-gray-800">
+          <div
+            @click="onSwitch"
+            v-if="isUrl"
+            class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full ml-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+          >
+            <Type />
+          </div>
+          <div
+            @click="onSwitch"
+            v-else
+            class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+            dark:hover:bg-gray-950
+          >
+            <Link />
+          </div>
+        </div>
         <p class="text-center flex-1 text-2xl">Shortlist</p>
-        <Sun v-if="isDark" @click="isDark = false"></Sun>
-        <Moon v-else @click="isDark = true" class="cursor-pointer"></Moon>
+        <div class="flex items-center justify-end">
+          <Sun :size="26" v-if="isDark" @click="isDark = false"></Sun>
+          <Moon
+            :size="26"
+            v-else
+            @click="isDark = true"
+            class="cursor-pointer"
+          ></Moon>
+        </div>
       </div>
-      <textarea
-        class="border rounded-md p-2"
-        rows="10"
-        v-model="jd_text"
-        placeholder="Paste the JD Text Here"
-      />
-      <input
-        class="border rounded-md px-1 sm:p-2"
-        v-model="jd_url"
-        placeholder="Paste the JD URL Here"
-      />
+
+      <div class="flex flex-col gap-2">
+        <input
+          required
+          v-if="isUrl"
+          class="border rounded-md p-2 sm:p-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          v-model="jd_url"
+          placeholder="Paste the JD URL Here"
+        />
+        <textarea
+          required
+          v-else
+          class="border field-sizing-content resize-none rounded-md p-2 min-h-10 max-h-80"
+          rows="1"
+          v-model="jd_text"
+          placeholder="Paste the JD Text Here."
+        />
+      </div>
+      <button
+        type="button"
+        class="border cursor-pointer font-mono bg-gray-100 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-950 rounded-md p-2"
+        @click="onClear"
+      >
+        CLEAR
+      </button>
       <button
         type="button"
         class="border-2 cursor-pointer font-mono bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-950 rounded-md p-2"
@@ -60,28 +116,38 @@ const onSubmit = async () => {
         SUBMIT
       </button>
 
-      <div class="border rounded-lg p-2" v-if="results">
+      <div class="border rounded-lg p-2 gap-2 flex flex-col" v-if="results">
         <ul class="text-center font-mono text-lg" v-if="results.score">
           Score:
           {{
-            results.score.toFixed(4)
+            results.score.toFixed(2)
           }}
         </ul>
         <div
-          class="border rounded-lg overflow-y-scroll p-2 h-96 grid grid-cols-2 gap-2"
+          class="border rounded-lg overflow-y-scroll p-2 grid grid-cols-2 divide-x-2"
         >
-          <div>
+          <div class="flex flex-col divide-y-2">
             <p class="text-xl text-center">Matched</p>
-            <ul>
-              <li v-for="result in results.matched">{{ result[0] }}</li>
+            <ul class="p-2">
+              <li v-for="(result, index) in results.matched">
+                {{ index + 1 }}:{{ result[0] }}
+              </li>
             </ul>
           </div>
-          <div>
+          <div class="flex flex-col divide-y-2">
             <p class="text-xl text-center">Missing</p>
-            <ul>
-              <li v-for="result in results.missing">{{ result[0] }}</li>
+            <ul class="p-2">
+              <li v-for="(result, index) in results.missing">
+                {{ index + 1 }}:{{ result[0] }}
+              </li>
             </ul>
           </div>
+        </div>
+        <div class="border rounded-lg p-2 flex flex-col divide-y-2">
+          <p class="text-xl text-center">Review</p>
+          <p class="text-lg" v-if="results.review">
+            {{ results.review }}
+          </p>
         </div>
       </div>
     </div>

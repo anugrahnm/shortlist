@@ -99,8 +99,11 @@ const onClear = () => {
             </div>
           </div>
         </div>
-        <p class="text-center flex-1 text-2xl">Shortlist</p>
-        <div class="flex items-center justify-end">
+        <div>
+          <p class="text-center flex-1 text-2xl">Shortlist</p>
+          <p class="text-center flex-1 text-xs">Match your CV to any job.</p>
+        </div>
+        <div class="flex items-start pt-1 justify-end">
           <Sun :size="26" v-if="isDark" @click="isDark = false"></Sun>
           <Moon
             :size="26"

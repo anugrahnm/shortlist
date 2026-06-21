@@ -3,7 +3,7 @@ FROM python:3.13-slim
 WORKDIR /app
 
 COPY backend/pyproject.toml backend/uv.lock ./
-COPY . .
+COPY backend/ .
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 

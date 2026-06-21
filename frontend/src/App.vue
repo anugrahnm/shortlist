@@ -31,8 +31,8 @@ const onSubmit = async () => {
 
     const response = await fetch(
       isUseAi.value
-        ? "http://localhost:8000/analyze/gemini/"
-        : "http://localhost:8000/analyze/",
+        ? `${import.meta.env.VITE_API_URL}/analyze/gemini/`
+        : `${import.meta.env.VITE_API_URL}/analyze/`,
       requestOptions,
     );
     results.value = await response.json();

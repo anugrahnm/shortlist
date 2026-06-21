@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { Binary, Link, Moon, Sparkles, Sun, Type } from "lucide-vue-next";
+import {
+  Binary,
+  Link,
+  Loader,
+  Moon,
+  Sparkles,
+  Sun,
+  Type,
+} from "lucide-vue-next";
 import { ref } from "vue";
 
 const jd_text = ref("");
@@ -13,10 +21,30 @@ const results = ref<{
 const isDark = ref(false);
 const isUrl = ref(true);
 const isUseAi = ref(true);
+const isLoading = ref(false);
+const cache = ref(
+  new Map<
+    string,
+    {
+      matched: string[][];
+      missing: string[][];
+      score: number;
+      review: string;
+    }
+  >(),
+);
 
 const onSubmit = async () => {
   if (jd_text.value === "" && jd_url.value === "") {
     alert("Please enter the JD Text/URL before Submitting!");
+    return;
+  }
+  isLoading.value = true;
+  const key = `${isUseAi.value ? "gemini" : "tfidf"}_${jd_text.value || jd_url.value}`;
+  if (cache.value.has(key)) {
+    results.value = cache.value.get(key) as typeof results.value;
+    isLoading.value = false;
+    return;
   } else {
     const body = jd_text.value
       ? { text: jd_text.value }
@@ -27,7 +55,6 @@ const onSubmit = async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     };
-    console.log("isUseAi:", isUseAi.value);
 
     const response = await fetch(
       isUseAi.value
@@ -36,6 +63,11 @@ const onSubmit = async () => {
       requestOptions,
     );
     results.value = await response.json();
+
+    if (results.value) {
+      cache.value.set(key, results.value);
+      isLoading.value = false;
+    }
   }
 };
 
@@ -145,13 +177,17 @@ const onClear = () => {
       >
         CLEAR
       </button>
-      <button
-        type="button"
-        class="border-2 cursor-pointer font-mono bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-950 rounded-md p-2"
-        @click="onSubmit"
-      >
-        SUBMIT
-      </button>
+      <div class="flex justify-center items-center">
+        <Loader v-if="isLoading" class="animate-spin" />
+        <button
+          v-else
+          type="button"
+          class="border-2 cursor-pointer w-full font-mono bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-950 rounded-md p-2"
+          @click="onSubmit"
+        >
+          SUBMIT
+        </button>
+      </div>
 
       <div class="border rounded-lg p-2 gap-2 flex flex-col" v-if="results">
         <ul class="text-center font-mono text-lg" v-if="results.score">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, Moon, Sun, Type } from "lucide-vue-next";
+import { Binary, Link, Moon, Sparkles, Sun, Type } from "lucide-vue-next";
 import { ref } from "vue";
 
 const jd_text = ref("");
@@ -11,7 +11,8 @@ const results = ref<{
   review: string;
 } | null>(null);
 const isDark = ref(false);
-const isUrl = ref(false);
+const isUrl = ref(true);
+const isUseAi = ref(true);
 
 const onSubmit = async () => {
   if (jd_text.value === "" && jd_url.value === "") {
@@ -26,17 +27,24 @@ const onSubmit = async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     };
+    console.log("isUseAi:", isUseAi.value);
 
     const response = await fetch(
-      "http://localhost:8000/analyze/gemini/",
+      isUseAi.value
+        ? "http://localhost:8000/analyze/gemini/"
+        : "http://localhost:8000/analyze/",
       requestOptions,
     );
     results.value = await response.json();
   }
 };
 
-const onSwitch = () => {
+const onSwitchInput = () => {
   isUrl.value = !isUrl.value;
+};
+
+const onSwitchMode = () => {
+  isUseAi.value = !isUseAi.value;
 };
 
 const onClear = () => {
@@ -55,21 +63,40 @@ const onClear = () => {
       class="flex-col flex w-full sm:w-0 min-w-xs sm:min-w-2xl gap-2 border rounded-lg sm:m-0 p-4"
     >
       <div class="grid grid-cols-3">
-        <div class="border rounded-lg w-20 h-8 bg-gray-100 dark:bg-gray-800">
-          <div
-            @click="onSwitch"
-            v-if="isUrl"
-            class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full ml-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
-          >
-            <Type />
+        <div class="flex gap-2">
+          <div class="border rounded-lg w-20 h-8 bg-gray-100 dark:bg-gray-800">
+            <div
+              @click="onSwitchInput"
+              v-if="isUrl"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+            >
+              <Link />
+            </div>
+            <div
+              @click="onSwitchInput"
+              v-else
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full ml-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+              dark:hover:bg-gray-950
+            >
+              <Type />
+            </div>
           </div>
-          <div
-            @click="onSwitch"
-            v-else
-            class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
-            dark:hover:bg-gray-950
-          >
-            <Link />
+          <div class="border rounded-lg w-20 h-8 bg-gray-100 dark:bg-gray-800">
+            <div
+              @click="onSwitchMode"
+              v-if="isUseAi"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+              dark:hover:bg-gray-950
+            >
+              <Sparkles />
+            </div>
+            <div
+              @click="onSwitchMode"
+              v-else
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full ml-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+            >
+              <Binary />
+            </div>
           </div>
         </div>
         <p class="text-center flex-1 text-2xl">Shortlist</p>
@@ -87,18 +114,25 @@ const onClear = () => {
       <div class="flex flex-col gap-2">
         <input
           required
-          v-if="isUrl"
+          v-if="isUrl && isUseAi"
           class="border rounded-md p-2 sm:p-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
           v-model="jd_url"
           placeholder="Paste the JD URL Here"
         />
         <textarea
           required
-          v-else
+          v-else-if="!isUrl || isUseAi"
           class="border field-sizing-content resize-none rounded-md p-2 min-h-10 max-h-80"
           rows="1"
           v-model="jd_text"
           placeholder="Paste the JD Text Here."
+        />
+        <input
+          required
+          v-if="isUrl && !isUseAi"
+          class="border rounded-md p-2 sm:p-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          v-model="jd_url"
+          placeholder="URL mode on TD-IDF mode wont work well for JS-heavy sites. Use text mode for best results or switch to the AI Mode."
         />
       </div>
       <button

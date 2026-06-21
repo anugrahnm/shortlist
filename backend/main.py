@@ -58,9 +58,9 @@ class JDInput(BaseModel):
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173" 
+    "http://localhost:5173",
+    "https://shortlist.anugrah.dev"
 ]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins = origins,

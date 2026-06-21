@@ -187,6 +187,13 @@ const onClear = () => {
           </p>
         </div>
       </div>
+      <div class="flex items-center justify-center pt-1">
+        <a href="https://github.com/anugrahnm/shortlist" target="/blank">
+          <svg width="24" height="24" aria-hidden="true">
+            <use href="/icons.svg#github-icon" />
+          </svg>
+        </a>
+      </div>
     </div>
   </div>
 </template>

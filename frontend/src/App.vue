@@ -150,7 +150,7 @@ const onClear = () => {
               <Type class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
             </div>
             <span
-              class="tooltip text-xs rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-50"
+              class="hidden sm:flex tooltip text-xs rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-50"
               >Click to change input type (Text/URL)</span
             >
           </div>
@@ -174,7 +174,7 @@ const onClear = () => {
               <Binary class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
             </div>
             <span
-              class="tooltip text-xs rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-50"
+              class="hidden sm:flex tooltip text-xs rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-50"
               >Click to change mode (Gemini/TD-IDF)</span
             >
           </div>
@@ -286,7 +286,7 @@ const onClear = () => {
             <use href="/icons.svg#github-icon" />
           </svg>
           <span
-            class="tooltip-bottom text-[10px] rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-fit"
+            class="hidden sm:flex tooltip-bottom text-[10px] rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-fit"
           >
             Repo: https://www.github.com/anugrahnm/shortlist
           </span>

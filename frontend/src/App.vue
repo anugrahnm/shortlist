@@ -126,26 +126,28 @@ const onClear = () => {
       class="flex-col flex w-full sm:w-0 min-w-xs sm:min-w-2xl gap-2 border rounded-lg sm:m-0 p-4"
     >
       <div class="grid grid-cols-3">
-        <div class="flex gap-2">
+        <div
+          class="flex flex-col justify-center items-start sm:flex-row sm:justify-start sm:items-center gap-1 sm:gap-2"
+        >
           <div
-            class="has-tooltip border rounded-lg w-20 h-8 bg-gray-100 dark:bg-gray-800"
+            class="has-tooltip border rounded-lg w-16 sm:w-20 h-6 sm:h-8 bg-gray-100 dark:bg-gray-800"
           >
             <div
               @mouseover="onHoverInput"
               @click="onSwitchInput"
               v-if="isUrl"
               :class="!hasPingedInput ? 'animate-bounce' : 'animate-none '"
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
             >
-              <Link />
+              <Link class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
             </div>
             <div
               @click="onSwitchInput"
               v-else
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full ml-7.5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full ml-[25.3px] sm:ml-7.5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
               dark:hover:bg-gray-950
             >
-              <Type />
+              <Type class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
             </div>
             <span
               class="tooltip text-xs rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-50"
@@ -153,23 +155,23 @@ const onClear = () => {
             >
           </div>
           <div
-            class="has-tooltip border rounded-lg w-20 h-8 bg-gray-100 dark:bg-gray-800"
+            class="has-tooltip border rounded-lg w-16 sm:w-20 h-6 sm:h-8 bg-gray-100 dark:bg-gray-800"
           >
             <div
               @mouseover="onHover"
               @click="onSwitchMode"
               v-if="isUseAi"
               :class="!hasPinged ? 'animate-bounce' : 'animate-none '"
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-900"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-900"
             >
-              <Sparkles />
+              <Sparkles class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
             </div>
             <div
               @click="onSwitchMode"
               v-else
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full ml-7.5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-900"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full ml-[25.3px] sm:ml-7.5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-900"
             >
-              <Binary />
+              <Binary class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
             </div>
             <span
               class="tooltip text-xs rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-50"
@@ -177,17 +179,23 @@ const onClear = () => {
             >
           </div>
         </div>
-        <div>
-          <p class="text-center flex-1 text-2xl">Shortlist</p>
-          <p class="text-center flex-1 text-xs">Match your CV to any job.</p>
+        <div class="justify-center items-center">
+          <p class="text-center flex-1 text-lg sm:text-2xl">Shortlist</p>
+          <p class="text-center flex-1 text-[10px] sm:text-xs">
+            Match your CV to any job.
+          </p>
         </div>
-        <div class="flex items-start pt-1 justify-end">
-          <Sun :size="26" v-if="isDark" @click="isDark = false"></Sun>
+        <div class="flex items-center justify-end cursor-pointer">
+          <Sun
+            class="w-6 h-6 sm:w-7.5 sm:h-7.5"
+            v-if="isDark"
+            @click="isDark = false"
+          ></Sun>
           <Moon
             :size="26"
             v-else
             @click="isDark = true"
-            class="cursor-pointer"
+            class="w-6 h-6 sm:w-7.5 sm:h-7.5 cursor-pointer"
           ></Moon>
         </div>
       </div>
@@ -196,29 +204,28 @@ const onClear = () => {
         <input
           required
           v-if="isUrl && isUseAi"
-          class="border rounded-md p-2 sm:p-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          class="border rounded-md p-2 text-xs sm:text-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
           v-model="jd_url"
           placeholder="Paste the JD URL Here"
         />
         <textarea
           required
           v-else-if="!isUrl || isUseAi"
-          class="border field-sizing-content resize-none rounded-md p-2 min-h-10 max-h-80"
-          rows="1"
+          class="border field-sizing-content resize-none rounded-md text-xs sm:text-md p-2 min-h-8 max-h-80"
           v-model="jd_text"
           placeholder="Paste the JD Text Here."
         />
         <input
           required
           v-if="isUrl && !isUseAi"
-          class="border rounded-md p-2 sm:p-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          class="border rounded-md text-xs sm:text-md p-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
           v-model="jd_url"
           placeholder="URL mode on TD-IDF mode wont work well for JS-heavy sites. Use text mode for best results or switch to the AI Mode."
         />
       </div>
       <button
         type="button"
-        class="border cursor-pointer font-mono bg-gray-100 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-950 rounded-md p-2"
+        class="border cursor-pointer text-xs sm:text-md font-mono bg-gray-100 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-950 rounded-md p-2"
         @click="onClear"
       >
         CLEAR
@@ -228,7 +235,7 @@ const onClear = () => {
         <button
           v-else
           type="button"
-          class="border-2 cursor-pointer w-full font-mono bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-950 rounded-md p-2"
+          class="border-2 cursor-pointer text-xs sm:text-md w-full font-mono bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-950 rounded-md p-2"
           @click="onSubmit"
         >
           SUBMIT

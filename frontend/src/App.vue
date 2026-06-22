@@ -137,14 +137,14 @@ const onClear = () => {
               @click="onSwitchInput"
               v-if="isUrl"
               :class="!hasPingedInput ? 'animate-bounce' : 'animate-none '"
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
             >
               <Link class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
             </div>
             <div
               @click="onSwitchInput"
               v-else
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full ml-[25.3px] sm:ml-7.5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full ml-[25.3px] sm:ml-[31px] flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
               dark:hover:bg-gray-950
             >
               <Type class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
@@ -162,14 +162,14 @@ const onClear = () => {
               @click="onSwitchMode"
               v-if="isUseAi"
               :class="!hasPinged ? 'animate-bounce' : 'animate-none '"
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-900"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
             >
               <Sparkles class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
             </div>
             <div
               @click="onSwitchMode"
               v-else
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full ml-[25.3px] sm:ml-7.5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-900"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12/20 sm:w-12 h-full ml-[25.3px] sm:ml-[31px] flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-700"
             >
               <Binary class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
             </div>
@@ -199,9 +199,16 @@ const onClear = () => {
           ></Moon>
         </div>
       </div>
+      <div class="flex">
+        <input
+          type="file"
+          class="border rounded-md text-xs sm:text-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 grow text-slate-700 dark:text-white file:mr-2 file:p-2 file:px-4 file:border-0 file:font-mono file:bg-gray-200 file:text-gray-700 dark:file:bg-gray-800 dark:file:text-gray-200 hover:file:bg-gray-300 dark:hover:file:bg-gray-700 bg-white dark:bg-gray-900"
+        />
+      </div>
 
       <div class="flex flex-col gap-2">
         <input
+          type="url"
           required
           v-if="isUrl && isUseAi"
           class="border rounded-md p-2 text-xs sm:text-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -225,7 +232,7 @@ const onClear = () => {
       </div>
       <button
         type="button"
-        class="border cursor-pointer text-xs sm:text-md font-mono bg-gray-100 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-950 rounded-md p-2"
+        class="border cursor-pointer text-xs sm:text-md font-mono bg-gray-100 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-md p-2"
         @click="onClear"
       >
         CLEAR
@@ -235,7 +242,7 @@ const onClear = () => {
         <button
           v-else
           type="button"
-          class="border-2 cursor-pointer text-xs sm:text-md w-full font-mono bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-950 rounded-md p-2"
+          class="border-2 cursor-pointer text-xs sm:text-md w-full font-mono bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-md p-2"
           @click="onSubmit"
         >
           SUBMIT

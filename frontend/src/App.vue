@@ -79,6 +79,37 @@ const onSwitchMode = () => {
   isUseAi.value = !isUseAi.value;
 };
 
+const hasHovered = ref(false);
+const hasHoveredInput = ref(false);
+const hasPinged = ref(false);
+const hasPingedInput = ref(false);
+
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+const onHover = () => {
+  hasHovered.value = !hasHovered.value;
+};
+const onHoverInput = () => {
+  hasHoveredInput.value = !hasHoveredInput.value;
+};
+
+const bounceLoop = () => {
+  (async () => {
+    while (!hasHovered.value) {
+      await delay(1000);
+    }
+    hasPinged.value = true;
+  })();
+
+  (async () => {
+    while (!hasHoveredInput.value) {
+      await delay(1000);
+    }
+    hasPingedInput.value = true;
+  })();
+};
+bounceLoop();
+
 const onClear = () => {
   jd_text.value = "";
   jd_url.value = "";
@@ -96,10 +127,14 @@ const onClear = () => {
     >
       <div class="grid grid-cols-3">
         <div class="flex gap-2">
-          <div class="border rounded-lg w-20 h-8 bg-gray-100 dark:bg-gray-800">
+          <div
+            class="has-tooltip border rounded-lg w-20 h-8 bg-gray-100 dark:bg-gray-800"
+          >
             <div
+              @mouseover="onHoverInput"
               @click="onSwitchInput"
               v-if="isUrl"
+              :class="!hasPingedInput ? 'animate-bounce' : 'animate-none '"
               class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
             >
               <Link />
@@ -107,28 +142,39 @@ const onClear = () => {
             <div
               @click="onSwitchInput"
               v-else
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full ml-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full ml-7.5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
               dark:hover:bg-gray-950
             >
               <Type />
             </div>
+            <span
+              class="tooltip text-xs rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-50"
+              >Click to change input type (Text/URL)</span
+            >
           </div>
-          <div class="border rounded-lg w-20 h-8 bg-gray-100 dark:bg-gray-800">
+          <div
+            class="has-tooltip border rounded-lg w-20 h-8 bg-gray-100 dark:bg-gray-800"
+          >
             <div
+              @mouseover="onHover"
               @click="onSwitchMode"
               v-if="isUseAi"
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
-              dark:hover:bg-gray-950
+              :class="!hasPinged ? 'animate-bounce' : 'animate-none '"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-900"
             >
               <Sparkles />
             </div>
             <div
               @click="onSwitchMode"
               v-else
-              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full ml-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900"
+              class="cursor-pointer border-2 shadow-2xl rounded-md w-12 h-full ml-7.5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-900"
             >
               <Binary />
             </div>
+            <span
+              class="tooltip text-xs rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-50"
+              >Click to change mode (Gemini/TD-IDF)</span
+            >
           </div>
         </div>
         <div>
@@ -224,10 +270,19 @@ const onClear = () => {
         </div>
       </div>
       <div class="flex items-center justify-center pt-1">
-        <a href="https://github.com/anugrahnm/shortlist" target="/blank">
-          <svg width="24" height="24" aria-hidden="true">
+        <a
+          href="https://github.com/anugrahnm/shortlist"
+          target="/blank"
+          class="dark: fill-current has-tooltip"
+        >
+          <svg width="24" height="24" aria-hidden="true" class="">
             <use href="/icons.svg#github-icon" />
           </svg>
+          <span
+            class="tooltip-bottom text-[10px] rounded shadow-lg p-1 bg-gray-100 text-gray-700 w-fit"
+          >
+            Repo: https://www.github.com/anugrahnm/shortlist
+          </span>
         </a>
       </div>
     </div>

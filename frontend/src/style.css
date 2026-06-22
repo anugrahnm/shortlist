@@ -1,2 +1,35 @@
 @import "tailwindcss";
 @variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --animate-bounce: bounce 1s infinite; /* bounce 1s infinite */
+
+  @keyframes bounce {
+    0% {
+      transform: none;
+    }
+
+    100% {
+      transform: none;
+      animation-timing-function: cubic-bezier(0, 0, 0, 1);
+    }
+    50% {
+      transform: translateX(15%);
+      animation-timing-function: ease-in;
+    }
+  }
+}
+
+.tooltip,
+.tooltip-bottom {
+  @apply invisible absolute;
+}
+
+.has-tooltip:hover .tooltip {
+  @apply visible z-50;
+  @apply -translate-y-20 -translate-15;
+}
+.has-tooltip:hover .tooltip-bottom {
+  @apply visible z-50;
+  @apply translate-y-2 -translate-32;
+}

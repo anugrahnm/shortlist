@@ -52,6 +52,7 @@ def gemini(cv, jd_text=None, jd_url=None):
 
 
 class JDInput(BaseModel):
+
     text: str | None = None
     url: str | None = None
 

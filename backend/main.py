@@ -1,6 +1,8 @@
-from fastapi import HTTPException, FastAPI
+from google import genai
+from fastapi import Form, HTTPException, FastAPI, UploadFile, File
 from pydantic import BaseModel
 from bs4 import BeautifulSoup
+from typing import Annotated
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import httpx
@@ -11,10 +13,8 @@ import json
 
 load_dotenv()
 
-from google import genai
 
 client = genai.Client()
-
 
 
 def gemini(cv, jd_text=None, jd_url=None):
@@ -42,7 +42,6 @@ def gemini(cv, jd_text=None, jd_url=None):
         No markdown, no backticks, no extra text. JSON only.
     """
 
-
     response = client.models.generate_content(
         model="gemini-3.1-flash-lite",
         contents=prompt
@@ -50,11 +49,6 @@ def gemini(cv, jd_text=None, jd_url=None):
    # print(json.loads(response.text))
     return json.loads(response.text)
 
-
-class JDInput(BaseModel):
-
-    text: str | None = None
-    url: str | None = None
 
 app = FastAPI()
 
@@ -64,30 +58,33 @@ origins = [
 ]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = origins,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["POST"],
-    allow_headers=["Content-Type"]
+    allow_headers=[],
 )
 
 vectorizer = TfidfVectorizer(stop_words="english", lowercase=True)
+
 
 @app.get("/health")
 def health_check():
     return {"status": "OK"}
 
-with open("cv.txt", "r") as f:
-    cv = f.read()
+
+# with open("cv.txt", "r") as f:
+#     cv = f.read()
 
 
 def fetch_jd_from_url(url):
     response = httpx.get(url)
     html_content = response.text
     print(html_content)
-    soup = BeautifulSoup(html_content, 'html.parser' )
-    element = soup.find('div', attrs={'data-testid':'job-card-main'})
+    soup = BeautifulSoup(html_content, 'html.parser')
+    element = soup.find('div', attrs={'data-testid': 'job-card-main'})
     text_content = element.get_text(strip=True)
     return text_content
+
 
 def calculate_match(cv_text, jd_text):
     vectors = vectorizer.fit_transform([cv_text, jd_text])
@@ -96,40 +93,52 @@ def calculate_match(cv_text, jd_text):
     jd_keywords = list(zip(feature_names, vectors_jd))
     jd_keywords.sort(key=lambda x: x[1], reverse=True)
 
-    matched = [jd_keyword for jd_keyword in jd_keywords if jd_keyword[0] in cv_text.lower() and jd_keyword[1] > 0]
+    matched = [jd_keyword for jd_keyword in jd_keywords if jd_keyword[0]
+               in cv_text.lower() and jd_keyword[1] > 0]
 
-    missing = [jd_keyword for jd_keyword in jd_keywords if jd_keyword[0] not in cv_text.lower() and jd_keyword[1] > 0]
+    missing = [jd_keyword for jd_keyword in jd_keywords if jd_keyword[0]
+               not in cv_text.lower() and jd_keyword[1] > 0]
 
     cos_sim = cosine_similarity(vectors)
-    return {"matched": matched, "missing": missing, "score":cos_sim[0,1]}
+    return {"matched": matched, "missing": missing, "score": cos_sim[0, 1]}
 
 
 @app.post("/analyze/")
-def analyze(input: JDInput):
-    if input.text:
-        score = calculate_match(cv, input.text)
-        return {"matched":score["matched"],"missing":score["missing"],"score": score["score"]}
-    if input.url:
+def analyze(
+    cv: Annotated[UploadFile, File()],
+    text: Annotated[str | None, Form()] = None,
+    url: Annotated[str | None, Form()] = None
+):
+    # cv_bytes = aw
+    if text:
+        score = calculate_match(cv, text)
+        return {"matched": score["matched"], "missing": score["missing"], "score": score["score"]}
+    if url:
         try:
-            text = fetch_jd_from_url(input.url)
-            score = calculate_match(cv, text)
-            return {"matched":score["matched"],"missing":score["missing"],"score": score["score"]}
-        except httpx.HTTPError as e:
-            raise HTTPException(status_code=400, detail="Your request is malformed or invalid")
+            text_from_url = fetch_jd_from_url(url)
+            score = calculate_match(cv, text_from_url)
+            return {"matched": score["matched"], "missing": score["missing"], "score": score["score"]}
+        except httpx.HTTPError:
+            raise HTTPException(
+                status_code=400, detail="Your request is malformed or invalid")
     else:
         raise HTTPException(status_code=400)
 
+
 @app.post("/analyze/gemini/")
-def gemini_analyze(input:JDInput):
+def gemini_analyze(cv: Annotated[UploadFile, File()],
+                   text: Annotated[str, Form()],
+                   url: Annotated[str, Form()]):
     if input.text:
         score = gemini(cv=cv, jd_text=input.text)
-        return {"matched":score["matched"],"missing":score["missing"],"score": score["score"], "review":score["review"]}
+        return {"matched": score["matched"], "missing": score["missing"], "score": score["score"], "review": score["review"]}
     if input.url:
         try:
-            #text = fetch_jd_from_url(input.url)
+            # text = fetch_jd_from_url(input.url)
             score = gemini(cv=cv, jd_url=input.url)
-            return {"matched":score["matched"],"missing":score["missing"],"score": score["score"], "review":score["review"]}
+            return {"matched": score["matched"], "missing": score["missing"], "score": score["score"], "review": score["review"]}
         except httpx.HTTPError as e:
-            raise HTTPException(status_code=400, detail="Your request is malformed or invalid")
+            raise HTTPException(
+                status_code=400, detail="Your request is malformed or invalid")
     else:
         raise HTTPException(status_code=400)

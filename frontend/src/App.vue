@@ -44,20 +44,20 @@ const onSubmit = async () => {
     return;
   }
   isLoading.value = true;
-  const key = `${isUseAi.value ? "gemini" : "tfidf"}_${jd_text.value || jd_url.value}`;
+  const key = `${isUseAi.value ? "gemini" : "tfidf"}_${jd_text.value || jd_url.value}_${cv_upload.value?.name}`;
   if (cache.value.has(key)) {
     results.value = cache.value.get(key) as typeof results.value;
     isLoading.value = false;
     return;
   } else {
-    const body = jd_text.value
-      ? { text: jd_text.value }
-      : { url: jd_url.value };
+    const formData = new FormData();
+    if (cv_upload.value) formData.append("cv", cv_upload.value);
+    if (jd_text.value) formData.append("text", jd_text.value);
+    if (jd_url.value) formData.append("url", jd_url.value);
 
     const requestOptions = {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: formData,
     };
 
     const response = await fetch(

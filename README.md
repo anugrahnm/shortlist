@@ -51,4 +51,3 @@ npm run dev
 
 - Results are cached in the browser for the session. Submitting the same JD again in the same mode will return the cached result instantly without hitting the API.
 - URL scraping works best with plain HTML pages. JS-heavy sites like LinkedIn may not parse correctly in TF-IDF mode. Use AI mode or paste the text instead.
-- The CV is stored as a static text file at `backend/cv.txt`. Update it with your own CV to use the tool.

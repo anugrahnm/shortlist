@@ -11,6 +11,7 @@ dependencies = [
     "google-genai>=2.8.0",
     "httpx>=0.28.1",
     "load-dotenv>=0.1.0",
+    "pymupdf>=1.27.2.3",
     "python-multipart>=0.0.32",
     "scikit-learn>=1.9.0",
     "uvicorn>=0.49.0",

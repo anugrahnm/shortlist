@@ -76,7 +76,6 @@ const onSubmit = async () => {
 };
 
 const onCVUpload = (event: Event) => {
-  //temp until backend is configured
   const input = event.target as HTMLInputElement;
   if (input.files) {
     cv_upload.value = input.files[0];
@@ -126,6 +125,7 @@ const onClear = () => {
   jd_text.value = "";
   jd_url.value = "";
   results.value = null;
+  cv_upload.value = null;
 };
 </script>
 
@@ -214,6 +214,7 @@ const onClear = () => {
       <div class="flex">
         <input
           type="file"
+          accept=".pdf"
           class="border rounded-md file:rounded-l-md text-xs sm:text-md outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 grow text-slate-700 dark:text-white file:mr-2 file:p-2 file:px-4 file:border-0 file:font-mono file:bg-gray-200 file:text-gray-700 dark:file:bg-gray-800 dark:file:text-gray-200 hover:file:bg-gray-300 dark:hover:file:bg-gray-700 bg-white dark:bg-gray-900"
           v-on:change="onCVUpload"
         />

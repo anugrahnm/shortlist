@@ -7,9 +7,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import httpx
 from fastapi.middleware.cors import CORSMiddleware
-import os
 from dotenv import load_dotenv
 import json
+import pymupdf
 
 load_dotenv()
 
@@ -61,7 +61,7 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["POST"],
-    allow_headers=[],
+    allow_headers=["*"],
 )
 
 vectorizer = TfidfVectorizer(stop_words="english", lowercase=True)
@@ -79,7 +79,6 @@ def health_check():
 def fetch_jd_from_url(url):
     response = httpx.get(url)
     html_content = response.text
-    print(html_content)
     soup = BeautifulSoup(html_content, 'html.parser')
     element = soup.find('div', attrs={'data-testid': 'job-card-main'})
     text_content = element.get_text(strip=True)
@@ -104,19 +103,24 @@ def calculate_match(cv_text, jd_text):
 
 
 @app.post("/analyze/")
-def analyze(
+async def analyze(
     cv: Annotated[UploadFile, File()],
     text: Annotated[str | None, Form()] = None,
     url: Annotated[str | None, Form()] = None
 ):
-    # cv_bytes = aw
+    print(type(cv))
+    print(cv)
+    cv_bytes = await cv.read()
+    doc = pymupdf.open(stream=cv_bytes, filetype="pdf")
+    cv_text = chr(12).join([page.get_text() for page in doc])
+    print(cv_text)
     if text:
-        score = calculate_match(cv, text)
+        score = calculate_match(cv_text, text)
         return {"matched": score["matched"], "missing": score["missing"], "score": score["score"]}
     if url:
         try:
             text_from_url = fetch_jd_from_url(url)
-            score = calculate_match(cv, text_from_url)
+            score = calculate_match(cv_text, text_from_url)
             return {"matched": score["matched"], "missing": score["missing"], "score": score["score"]}
         except httpx.HTTPError:
             raise HTTPException(
@@ -126,18 +130,25 @@ def analyze(
 
 
 @app.post("/analyze/gemini/")
-def gemini_analyze(cv: Annotated[UploadFile, File()],
-                   text: Annotated[str, Form()],
-                   url: Annotated[str, Form()]):
-    if input.text:
-        score = gemini(cv=cv, jd_text=input.text)
+async def gemini_analyze(cv: Annotated[UploadFile, File()],
+                         text: Annotated[str | None, Form()] = None,
+                         url: Annotated[str | None, Form()] = None
+                         ):
+
+    cv_bytes = await cv.read()
+    doc = pymupdf.open(stream=cv_bytes, filetype="pdf")
+    cv_text = chr(12).join([page.get_text() for page in doc])
+
+    if text:
+        score = gemini(cv=cv_text, jd_text=text)
         return {"matched": score["matched"], "missing": score["missing"], "score": score["score"], "review": score["review"]}
-    if input.url:
+    if url:
         try:
-            # text = fetch_jd_from_url(input.url)
-            score = gemini(cv=cv, jd_url=input.url)
+            # text = fetch_jd_from_url(url)
+            score = gemini(cv=cv_text, jd_url=url)
             return {"matched": score["matched"], "missing": score["missing"], "score": score["score"], "review": score["review"]}
         except httpx.HTTPError as e:
+            print(e)
             raise HTTPException(
                 status_code=400, detail="Your request is malformed or invalid")
     else:

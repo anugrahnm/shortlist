@@ -1,6 +1,5 @@
 from google import genai
 from fastapi import Form, HTTPException, FastAPI, UploadFile, File
-from pydantic import BaseModel
 from bs4 import BeautifulSoup
 from typing import Annotated
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -18,7 +17,6 @@ client = genai.Client()
 
 
 def gemini(cv, jd_text=None, jd_url=None):
-
     prompt = f"""You are a senior recruiter assessing a candidate's CV against a job description.
         CV:
         {cv}
@@ -43,19 +41,15 @@ def gemini(cv, jd_text=None, jd_url=None):
     """
 
     response = client.models.generate_content(
-        model="gemini-3.1-flash-lite",
-        contents=prompt
+        model="gemini-3.1-flash-lite", contents=prompt
     )
-   # print(json.loads(response.text))
+    # print(json.loads(response.text))
     return json.loads(response.text)
 
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173",
-    "https://shortlist.anugrah.dev"
-]
+origins = ["http://localhost:5173", "https://shortlist.anugrah.dev"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -79,8 +73,8 @@ def health_check():
 def fetch_jd_from_url(url):
     response = httpx.get(url)
     html_content = response.text
-    soup = BeautifulSoup(html_content, 'html.parser')
-    element = soup.find('div', attrs={'data-testid': 'job-card-main'})
+    soup = BeautifulSoup(html_content, "html.parser")
+    element = soup.find("div", attrs={"data-testid": "job-card-main"})
     text_content = element.get_text(strip=True)
     return text_content
 
@@ -92,11 +86,17 @@ def calculate_match(cv_text, jd_text):
     jd_keywords = list(zip(feature_names, vectors_jd))
     jd_keywords.sort(key=lambda x: x[1], reverse=True)
 
-    matched = [jd_keyword for jd_keyword in jd_keywords if jd_keyword[0]
-               in cv_text.lower() and jd_keyword[1] > 0]
+    matched = [
+        jd_keyword
+        for jd_keyword in jd_keywords
+        if jd_keyword[0] in cv_text.lower() and jd_keyword[1] > 0
+    ]
 
-    missing = [jd_keyword for jd_keyword in jd_keywords if jd_keyword[0]
-               not in cv_text.lower() and jd_keyword[1] > 0]
+    missing = [
+        jd_keyword
+        for jd_keyword in jd_keywords
+        if jd_keyword[0] not in cv_text.lower() and jd_keyword[1] > 0
+    ]
 
     cos_sim = cosine_similarity(vectors)
     return {"matched": matched, "missing": missing, "score": cos_sim[0, 1]}
@@ -106,7 +106,7 @@ def calculate_match(cv_text, jd_text):
 async def analyze(
     cv: Annotated[UploadFile, File()],
     text: Annotated[str | None, Form()] = None,
-    url: Annotated[str | None, Form()] = None
+    url: Annotated[str | None, Form()] = None,
 ):
     print(type(cv))
     print(cv)
@@ -116,24 +116,34 @@ async def analyze(
     print(cv_text)
     if text:
         score = calculate_match(cv_text, text)
-        return {"matched": score["matched"], "missing": score["missing"], "score": score["score"]}
+        return {
+            "matched": score["matched"],
+            "missing": score["missing"],
+            "score": score["score"],
+        }
     if url:
         try:
             text_from_url = fetch_jd_from_url(url)
             score = calculate_match(cv_text, text_from_url)
-            return {"matched": score["matched"], "missing": score["missing"], "score": score["score"]}
+            return {
+                "matched": score["matched"],
+                "missing": score["missing"],
+                "score": score["score"],
+            }
         except httpx.HTTPError:
             raise HTTPException(
-                status_code=400, detail="Your request is malformed or invalid")
+                status_code=400, detail="Your request is malformed or invalid"
+            )
     else:
         raise HTTPException(status_code=400)
 
 
 @app.post("/analyze/gemini/")
-async def gemini_analyze(cv: Annotated[UploadFile, File()],
-                         text: Annotated[str | None, Form()] = None,
-                         url: Annotated[str | None, Form()] = None
-                         ):
+async def gemini_analyze(
+    cv: Annotated[UploadFile, File()],
+    text: Annotated[str | None, Form()] = None,
+    url: Annotated[str | None, Form()] = None,
+):
 
     cv_bytes = await cv.read()
     doc = pymupdf.open(stream=cv_bytes, filetype="pdf")
@@ -141,15 +151,26 @@ async def gemini_analyze(cv: Annotated[UploadFile, File()],
 
     if text:
         score = gemini(cv=cv_text, jd_text=text)
-        return {"matched": score["matched"], "missing": score["missing"], "score": score["score"], "review": score["review"]}
+        return {
+            "matched": score["matched"],
+            "missing": score["missing"],
+            "score": score["score"],
+            "review": score["review"],
+        }
     if url:
         try:
             # text = fetch_jd_from_url(url)
             score = gemini(cv=cv_text, jd_url=url)
-            return {"matched": score["matched"], "missing": score["missing"], "score": score["score"], "review": score["review"]}
+            return {
+                "matched": score["matched"],
+                "missing": score["missing"],
+                "score": score["score"],
+                "review": score["review"],
+            }
         except httpx.HTTPError as e:
             print(e)
             raise HTTPException(
-                status_code=400, detail="Your request is malformed or invalid")
+                status_code=400, detail="Your request is malformed or invalid"
+            )
     else:
         raise HTTPException(status_code=400)

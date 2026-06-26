@@ -6,7 +6,7 @@ Live at: [shortlist.anugrah.dev](https://shortlist.anugrah.dev)
 
 ## What it does
 
-Paste a job description (or a URL) and Shortlist compares it against your CV and returns:
+Upload your CV and paste a job description (or a URL) and Shortlist compares them and returns:
 
 - A match score
 - Keywords you already cover
@@ -24,6 +24,7 @@ Paste a job description (or a URL) and Shortlist compares it against your CV and
 - **Frontend** Vue 3, Vite, TypeScript, Tailwind CSS
 - **Backend** FastAPI, Python
 - **Matching** scikit-learn (TF-IDF + cosine similarity), Google Gemini API
+- **PDF extraction** PyMuPDF
 - **Scraping** httpx, BeautifulSoup4
 - **Hosting** DigitalOcean VPS, Caddy, Docker, GitHub Actions CI/CD
 
@@ -49,5 +50,6 @@ npm run dev
 
 ## Notes
 
+- Upload your CV as a PDF. Text is extracted automatically using PyMuPDF.
 - Results are cached in the browser for the session. Submitting the same JD again in the same mode will return the cached result instantly without hitting the API.
 - URL scraping works best with plain HTML pages. JS-heavy sites like LinkedIn may not parse correctly in TF-IDF mode. Use AI mode or paste the text instead.
